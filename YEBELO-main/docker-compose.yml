@@ -1,0 +1,34 @@
+services:
+  redpanda:
+    image: redpandadata/redpanda:latest
+    container_name: redpanda
+    command:
+      - redpanda start
+      - --overprovisioned
+      - --smp 1
+      - --memory 1G
+      - --reserve-memory 0M
+      - --node-id 0
+      - --check=false
+      - --kafka-addr PLAINTEXT://0.0.0.0:9092,OUTSIDE://0.0.0.0:29092
+      - --advertise-kafka-addr PLAINTEXT://redpanda:9092,OUTSIDE://localhost:29092
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+      - "9644:9644" # admin API
+    volumes:
+      - redpanda-data:/var/lib/redpanda/data
+
+  console:
+    image: redpandadata/console:latest
+    container_name: redpanda-console
+    depends_on:
+      - redpanda
+    ports:
+      - "8080:8080"
+    environment:
+      - KAFKA_BROKERS=redpanda:9092
+    # No command needed; latest console listens automatically
+
+volumes:
+  redpanda-data:
